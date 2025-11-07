@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Registros — Ações</title>
+  <style>
+    body{font-family:Inter,system-ui,Arial;margin:20px;background:#f4f6fb;color:#111}
+    .wrap{max-width:920px;margin:0 auto}
+    h1{color:#222}
+    .btn{padding:8px 12px;border-radius:8px;background:#6b3fa0;color:#fff;border:none;cursor:pointer}
+    .btn:hover{background:#8759b8}
+    .log{background:#fff;border-radius:8px;padding:12px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+    .meta{font-size:13px;color:#666;margin-bottom:6px}
+    .details{font-size:14px;color:#333}
+    .details table{border-collapse:collapse;width:100%;margin-top:6px}
+    .details th,.details td{border:1px solid #eee;padding:6px 8px;text-align:left;font-size:13px;vertical-align:top}
+    .details th{background:#fafafa;color:#444;width:35%}
+    .resumo-box{background:#faf9ff;border-left:4px solid #6b3fa0;padding:8px 10px;margin-top:8px;border-radius:6px;color:#333;white-space:pre-wrap}
+    .empty{color:#777;font-style:italic;margin-top:30px}
+    .actions{display:flex;gap:8px;align-items:center}
+    pre{background:#fafafa;border:1px solid #eee;padding:8px;border-radius:6px;overflow-x:auto}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h1>Registros de Ações (automático)</h1>
+      <div class="actions">
+        <button class="btn" id="clearLogs">🧹 Limpar Registros</button>
+        <button class="btn" id="downloadLogs">📦 Download JSON</button>
+        <button onclick="fecharAba()">❌</button>
+      </div>
+    </div>
+
+    <div id="logsContainer"></div>
+    <div id="empty" class="empty" style="display:none">Nenhum registro encontrado.</div>
+  </div>
+
+  <script>
+    const REG_STORE_KEY = 'controle_diario_registros_v1';
+    const DATA_STORE_KEY = 'controle_diario_v1';
+
+    function loadLogs() {
+      try {
+        const raw = localStorage.getItem(REG_STORE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.warn('loadLogs error', e);
+        return [];
+      }
+    }
+
+    function saveLogs(logs) {
+      try {
+        localStorage.setItem(REG_STORE_KEY, JSON.stringify(logs));
+      } catch (e) {
+        console.warn('saveLogs error', e);
+      }
+    }
+
+    function render() {
+      const container = document.getElementById('logsContainer');
+      container.innerHTML = '';
+      const logs = loadLogs();
+
+      if (!logs || logs.length === 0) {
+        document.getElementById('empty').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('empty').style.display = 'none';
+
+      logs.slice().reverse().forEach((l) => {
+        const el = document.createElement('div');
+        el.className = 'log';
+        const meta = `
+          <div class="meta">
+            <strong>${escapeHtml(l.action?.toUpperCase() || 'AÇÃO')}</strong> • 
+            categoria: <em>${escapeHtml(l.category || '—')}</em> • 
+            ${escapeHtml(l.display || '')}
+          </div>`;
+        const details = `<div class="details">${formatDetails(l.details)}</div>`;
+        el.innerHTML = meta + details;
+        container.appendChild(el);
+      });
+    }
+
+    // 🧩 Mostra todos os campos, corrigindo o nível "summary.summary"
+    function formatDetails(details) {
+      if (!details) return '<div class="small">Sem detalhes registrados.</div>';
+
+      let data = details;
+      // Corrige níveis duplicados (summary.summary)
+      if (data.summary && typeof data.summary === 'object' && data.summary.summary) {
+        data = data.summary.summary;
+      } else if (data.summary) {
+        data = data.summary;
+      }
+
+      // Se houver campo "resumo" separado, destacamos
+      let resumoHtml = '';
+      if (data.resumo) {
+        resumoHtml = `<div class="resumo-box"><strong>Resumo:</strong><br>${escapeHtml(data.resumo)}</div>`;
+        delete data.resumo; // evita mostrar repetido na tabela
+      }
+
+      if (typeof data === 'object') {
+        let rows = '';
+        for (const [key, value] of Object.entries(data)) {
+          rows += `<tr><th>${escapeHtml(key)}</th><td>${escapeHtml(formatValue(value))}</td></tr>`;
+        }
+        return `<table>${rows}</table>${resumoHtml}`;
+      }
+
+      return `<pre>${escapeHtml(String(data))}</pre>`;
+    }
+
+    function formatValue(v) {
+      if (v === null || v === undefined) return '—';
+      if (typeof v === 'number') return v.toLocaleString('pt-BR');
+      return String(v);
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // 🧹 Limpar registros
+    document.getElementById('clearLogs').addEventListener('click', () => {
+      if (confirm('Deseja realmente limpar todos os registros e zerar o painel de contagem de tarefas?')) {
+        localStorage.removeItem(REG_STORE_KEY);
+        localStorage.removeItem(DATA_STORE_KEY);
+        const newLogs = [{
+          action: 'limpeza_geral',
+          category: 'sistema',
+          display: new Date().toLocaleString('pt-BR'),
+          details: { descricao: 'Usuário limpou todos os registros e zerou o painel de contagem.' }
+        }];
+        saveLogs(newLogs);
+        render();
+        alert('🧹 Todos os registros e contadores foram apagados com sucesso!');
+      }
+    });
+
+    // 📦 Download JSON
+    document.getElementById('downloadLogs').addEventListener('click', () => {
+      const data = loadLogs();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'registros_acoes.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    render();
+
+    function fecharAba() {
+      window.close();
+    }
+  </script>
+</body>
+</html>

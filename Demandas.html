@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Controle Diário — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c1220;
+    --card:#101a2e;
+    --glass: rgba(255,255,255,0.06);
+    --accent-warm: #0095ff;
+    --accent-cool: #4f46e5;
+    --muted:#b8c2d3;
+    --text-bright:#f8fafc;
+    --glass-2: rgba(255,255,255,0.04);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:linear-gradient(135deg,#2d64dc 0%, #27db93 40%, #cfdc18 100%);
+    color:var(--text-bright);
+    min-height:100vh;
+  }
+  .app{max-width:1200px;margin:28px auto;padding:20px}
+
+  header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{height:78px;width:78px;object-fit:contain;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.5)}
+  .brand h1{font-size:22px;margin:0;font-weight:800;letter-spacing:0.4px;color:#fff}
+  .brand p{margin:0;color:var(--muted);font-size:13px}
+
+  .layout{display:grid;grid-template-columns:1fr 380px;gap:18px}
+
+  /* left column cards */
+  .panel{
+    background:linear-gradient(180deg,var(--card),#0e1932);
+    padding:16px;
+    border-radius:16px;
+    box-shadow:0 6px 18px rgba(8,10,20,.6);
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .card-title h2{margin:0;font-size:15px;color:#ffffff}
+  label{display:block;font-size:13px;margin-top:8px;color:#a9b4c9;font-weight:500}
+  input[type=text], input[type=number], textarea, select, input[type=date]{
+    width:100%;
+    padding:8px 10px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.06);
+    color:#f2f4f8;
+    margin-top:6px;
+    transition:all 0.2s ease;
+  }
+  input[type=date]{ color:#000; background:#fff; }
+  input:focus, textarea:focus, select:focus{
+    outline:none;
+    border-color:var(--accent-warm);
+    background:rgba(255,255,255,0.1);
+  }
+  body#index-page .list {
+  display: none !important;
+}
+  textarea{min-height:60px;resize:vertical}
+  .row{display:flex;gap:10px}
+  .row .col{flex:1}
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:10px;
+    background:linear-gradient(90deg,var(--accent-warm),var(--accent-cool));
+    border:none;
+    color:rgb(255, 255, 255);
+    cursor:pointer;
+    font-weight:600;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.3)}
+  .btn.ghost{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.15);
+  }
+  .btn.ghost:hover{background:rgba(255,255,255,0.15)}
+  select#impTipo, select#reunTipo {
+    background: #f5f7fa;
+    color: #000; /* texto preto */
+    border: 1px solid rgba(0,0,0,0.15);
+    font-weight: 600;
+  }
+  select#impTipo option, select#reunTipo option {
+    color: #000;
+    background: #fff;
+    font-weight: 600;
+  }
+  select#impTipo:focus, select#reunTipo:focus {
+    background: #fff;
+    border-color: var(--accent-warm);
+  }
+  .list{margin-top:10px;max-height:220px;overflow:auto;padding-right:6px}
+  .item{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:8px;
+    background:linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+    border:1px solid rgba(255,255,255,0.08);
+    transition:background 0.2s ease;
+  }
+  .item:hover{background:rgba(255,255,255,0.08)}
+  .item div{flex:1}
+  .tags{display:flex;gap:6px;align-items:center}
+  .pill{
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:12px;
+    background:rgba(255,255,255,0.12);
+    color:#dce4f4;
+  }
+
+  /* dashboard right column */
+  .dashboard .metric{
+    display:flex;
+    flex-direction:column;
+    padding:14px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.05);
+    margin-bottom:10px;
+  }
+  .metric .big{font-size:20px;font-weight:800;color:#fff}
+  .metric .small{font-size:12px;color:#b3bed4}
+
+  footer{margin-top:18px;color:#9ba7bd;font-size:13px;text-align:center}
+
+  /* responsive */
+  @media (max-width:980px){
+    .layout{grid-template-columns:1fr}
+    header{flex-direction:column;align-items:flex-start}
+    .brand img{height:64px;width:64px}
+  }
+</style>
+
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <img src="logo.png" alt="logo" />
+        <div>
+          <h1>Controle Diário</h1>
+          <p>Registro rápido — vendas, impactos, reuniões e oportunidades</p>
+        </div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button id="exportBtn" class="btn ghost">Exportar JSON</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+        <button id="importBtn" class="btn ghost">Importar JSON</button>
+        <!-- novo: botão abrir registros em nova aba -->
+        <button id="openRegistros" class="btn ghost">Registros</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section>
+               <!-- Reuniões/Demonstrações -->
+        <div class="panel" style="margin-top:14px">
+          <div class="card-title"><h2>Reuniões / Demonstrações / Demandas</h2><div class="pill">Total: <span id="reunCount">0</span></div></div>
+          <div class="row">
+            <div class="col"><label>Cliente</label><input id="reunCliente" type="text"/></div>
+            <div class="col"><label>Tipo</label><select id="reunTipo"><option>Reunião</option><option>Demonstração</option><option>Atividade</option></select></div>
+          </div>
+          <label>Resumo</label>
+          <textarea id="reunResumo"></textarea>
+          <div class="row">
+            <div class="col"><label>Analista</label><input id="reunAnalista" type="text"/></div>
+            <div class="col"><label>Horas</label><input id="reunHoras" type="number" step="0.1" min="0" value="0"/></div>
+          </div>
+          <label>Data da atividade</label>
+          <input id="reunData" type="date" />
+          <div style="margin-top:10px"><button id="addReun" class="btn">Registrar</button></div>
+          <div class="list" id="reunList"></div>
+        </div>
+        <!-- Impacts -->
+        <div class="panel">
+          <div class="card-title"><h2>Impactos Semana (clientes)</h2><div class="pill">Total: <span id="impactsCount">0</span></div></div>
+          <div class="row">
+            <div class="col">
+              <label>Cliente (nome)</label>
+              <input id="impCliente" type="text" placeholder="Nome do cliente" />
+            </div>
+            <div class="col">
+              <label>Tipo</label>
+              <select id="impTipo">
+                <option value="Positivo">Positivo</option>
+                <option value="Neutro">Neutro</option>
+                <option value="Negativo">Negativo</option>
+              </select>
+            </div>
+          </div>
+          <label>Descrição breve do impacto</label>
+          <textarea id="impDesc" placeholder="O que foi impactado (breve)"></textarea>
+          <div class="row">
+            <div class="col">
+              <label>Analista</label>
+              <input id="impAnalista" type="text" placeholder="Quem registrou" />
+            </div>
+            <div class="col">
+              <label>Horas gastas (decimal)</label>
+              <input id="impHoras" type="number" step="0.1" min="0" value="0"/>
+            </div>
+          </div>
+          <label>Data da atividade</label>
+          <input id="impData" type="date" />
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button id="addImpact" class="btn">Registrar Impacto</button>
+            <button id="clearImp" class="btn ghost">Limpar</button>
+          </div>
+
+          <div class="list" id="impList"></div>
+        </div>
+
+        <!-- Churns -->
+        <div class="panel" style="margin-top:14px">
+          <div class="card-title"><h2>Churns</h2><div class="pill">Total: <span id="churnCount">0</span></div></div>
+          <div class="row">
+            <div class="col">
+              <label>Cliente</label>
+              <input id="chCliente" type="text" placeholder="Nome do cliente" />
+            </div>
+            <div class="col">
+              <label>Motivo (curto)</label>
+              <input id="chMotivo" type="text" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="col"><label>Analista</label><input id="chAnalista" type="text"/></div>
+            <div class="col"><label>Horas gastas</label><input id="chHoras" type="number" step="0.1" min="0" value="0"/></div>
+          </div>
+          <label>Data da atividade</label>
+          <input id="chData" type="date" />
+          <div style="margin-top:10px"><button id="addChurn" class="btn">Registrar Churn</button></div>
+          <div class="list" id="churnList"></div>
+        </div>
+
+        <!-- Vendas -->
+        <div class="panel" style="margin-top:14px">
+          <div class="card-title"><h2>Vendas (concluídas)</h2><div class="pill">Total: <span id="vendasCount">0</span></div></div>
+          <label>O que foi vendido</label>
+          <input id="vendaDesc" type="text" placeholder="Produto / serviço" />
+          <div class="row">
+            <div class="col"><label>Cliente</label><input id="vendaCliente" type="text"/></div>
+            <div class="col"><label>Valor (BRL)</label><input id="vendaValor" type="number" step="0.01" min="0" value="0"/></div>
+          </div>
+          <div class="row">
+            <div class="col"><label>MRR (mensal)</label><input id="vendaMRR" type="number" step="0.01" min="0" value="0"/></div>
+            <div class="col"><label>Analista</label><input id="vendaAnalista" type="text"/></div>
+          </div>
+          <label>Data da atividade</label>
+          <input id="vendaData" type="date" />
+          <div style="margin-top:10px"><button id="addVenda" class="btn">Registrar Venda</button></div>
+         <div class="list" id="vendaList"></div>
+        </div>
+
+        <!-- Oportunidades -->
+        <div class="panel" style="margin-top:14px">
+          <div class="card-title"><h2>Oportunidades</h2><div class="pill">Total: <span id="oppCount">0</span></div></div>
+          <label>Oportunidade</label><input id="oppDesc" type="text"/>
+          <div class="row">
+            <div class="col"><label>Cliente</label><input id="oppCliente" type="text"/></div>
+            <div class="col"><label>Valor estimado</label><input id="oppValor" type="number" step="0.01" min="0" value="0"/></div>
+          </div>
+          <div class="row"><div class="col"><label>MRR estimado</label><input id="oppMRR" type="number" step="0.01" min="0" value="0"/></div><div class="col"><label>Analista</label><input id="oppAnalista" type="text"/></div></div>
+          <label>Data da atividade</label>
+          <input id="oppData" type="date" />
+          <div style="margin-top:10px"><button id="addOpp" class="btn">Registrar Oportunidade</button></div>
+          <div class="list" id="oppList"></div>
+        </div>
+
+        <!-- Novidades e Dificuldades -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+          <div class="panel">
+            <div class="card-title"><h2>Novidades da semana</h2></div>
+            <label>Descrição</label>
+            <textarea id="newsDesc"></textarea>
+            <div class="row"><div class="col"><label>Analista</label><input id="newsAnalista" type="text"/></div><div class="col"><label>Horas</label><input id="newsHoras" type="number" step="0.1" min="0" value="0"/></div></div>
+            <label>Data da atividade</label>
+            <input id="newsData" type="date" />
+            <div style="margin-top:10px"><button id="addNews" class="btn">Registrar Novidade</button></div>
+            <div class="list" id="newsList"></div>
+          </div>
+          <div class="panel">
+            <div class="card-title"><h2>Dificuldades</h2></div>
+            <label>Cliente</label><input id="diffCliente" type="text"/>
+            <label>Descrição da dificuldade</label><textarea id="diffDesc"></textarea>
+            <div class="row"><div class="col"><label>Analista</label><input id="diffAnalista" type="text"/></div><div class="col"><label>Horas</label><input id="diffHoras" type="number" step="0.1" min="0" value="0"/></div></div>
+            <label>Data da atividade</label>
+            <input id="diffData" type="date" />
+            <div style="margin-top:10px"><button id="addDiff" class="btn">Registrar Dificuldade</button></div>
+            <div class="list" id="diffList"></div
+          </div>
+        </div>
+
+      </section>
+
+      <aside class="dashboard">
+        <div class="panel">
+          <div class="card-title"><h2>Dashboard</h2><small style="color:var(--muted)">Indicadores agregados</small></div>
+
+          <div class="metric"><div class="small">Receita total (Vendas concluídas)</div><div id="totalRevenue" class="big">R$ 0,00</div></div>
+          <div class="metric"><div class="small">MRR total (Vendas)</div><div id="totalMRR" class="big">R$ 0,00</div></div>
+          <div class="metric"><div class="small">Horas gastas (todas atividades)</div><div id="totalHours" class="big">0.0h</div></div>
+
+          <div style="margin-top:12px">
+            <div class="small" style="margin-bottom:6px">Atividades por analista</div>
+            <div id="byAnalyst" style="display:block;max-height:200px;overflow:auto;padding-right:6px"></div>
+          </div>
+
+          <div style="margin-top:12px">
+            <div class="small" style="margin-bottom:6px">Contagem por tipo de tarefa</div>
+            <div id="byTaskType" style="display:block"></div>
+          </div>
+
+        </div>
+      </aside>
+
+    </main>
+
+    <footer>
+      Dados somente semanais.
+    </footer>
+  </div>
+
+  <script>
+    // --- Storage keys
+    const STORE_KEY = 'controle_diario_v1';
+    const REG_STORE_KEY = 'controle_diario_registros_v1'; // novo: logs de ações
+
+    // initial state
+    const state = {
+      impacts:[], churns:[], vendas:[], reunioes:[], oportunidades:[], novidades:[], dificuldades:[]
+    };
+
+    // helper: data atual no formato YYYY-MM-DD
+    function todayISO(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    // -- logging automático de ações (salva em REG_STORE_KEY)
+    function logAction(action, category, details){
+      try{
+        const raw = localStorage.getItem(REG_STORE_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        const entry = {
+          action, // ex: 'create', 'delete', 'import', 'export'
+          category, // ex: 'impacts','vendas', ...
+          details: details || {},
+          timestamp: new Date().toISOString(),
+          display: new Date().toLocaleString('pt-BR')
+        };
+        arr.push(entry);
+        localStorage.setItem(REG_STORE_KEY, JSON.stringify(arr));
+      }catch(e){
+        console.warn('logAction error',e);
+      }
+    }
+
+    // load from storage
+    function load(){
+      const raw = localStorage.getItem(STORE_KEY);
+      if(raw){
+        try{
+          const parsed = JSON.parse(raw);
+          // ensure arrays exist
+          ['impacts','churns','vendas','reunioes','oportunidades','novidades','dificuldades'].forEach(k=>{
+            state[k] = Array.isArray(parsed[k]) ? parsed[k] : state[k];
+          });
+        }catch(e){console.warn('erro parse storage',e)}
+      }
+    }
+
+    function save(){
+      localStorage.setItem(STORE_KEY, JSON.stringify(state));
+      renderAll();
+    }
+
+    // helpers
+    const fmtBRL = v => v==null? 'R$ 0,00' : Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    const sum = (arr, key)=> arr.reduce((s,i)=> s + (Number(i[key]) || 0),0);
+
+    // renderers
+    function renderAll(){
+      renderList('impacts'); renderList('churns'); renderList('vendas'); renderList('reunioes'); renderList('oportunidades'); renderList('novidades'); renderList('dificuldades');
+      renderCounts(); renderDashboard();
+      // set default dates on inputs if empty
+      setDefaultDates();
+    }
+
+    function renderCounts(){
+      document.getElementById('impactsCount').innerText = state.impacts.length;
+      document.getElementById('churnCount').innerText = state.churns.length;
+      document.getElementById('vendasCount').innerText = state.vendas.length;
+      document.getElementById('reunCount').innerText = state.reunioes.length;
+      document.getElementById('oppCount').innerText = state.oportunidades.length;
+    }
+
+    function makeItemHTML(type, idx, entry){
+      const hours = entry.horas ? (Number(entry.horas) || 0) : 0;
+      const dateDisplay = entry.data ? `<div style="margin-top:6px;color:var(--muted)">Data: ${entry.data}</div>` : '';
+      if(type==='impacts'){
+        return `
+          <div class="item" data-type="${type}" data-idx="${idx}">
+            <div>
+              <strong>${escapeHtml(entry.cliente)}</strong> <div style="font-size:12px;color:var(--muted)">${escapeHtml(entry.descricao||'')}</div>
+              <div style="margin-top:6px;display:flex;gap:8px;align-items:center;color:var(--muted)">
+                <div class="pill">Tipo: ${entry.tipo}</div>
+                <div class="pill">Analista: ${escapeHtml(entry.analista||'-')}</div>
+                <div class="pill">Horas: ${hours}h</div>
+              </div>
+              ${dateDisplay}
+            </div>
+            <div style="margin-left:10px;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <div class="pill">#${idx+1}</div>
+              <button class="btn ghost" onclick="removeEntry('impacts',${idx})">Excluir</button>
+            </div>
+          </div>`;
+      }
+      if(type==='churns'){
+        return `<div class="item" data-type="${type}" data-idx="${idx}"><div><strong>${escapeHtml(entry.cliente)}</strong><div style="font-size:12px;color:var(--muted)">${escapeHtml(entry.motivo||'')}</div>${dateDisplay}<div style="margin-top:6px;color:var(--muted)">Analista: ${escapeHtml(entry.analista||'-')} &nbsp; • &nbsp;Horas: ${hours}h</div></div><div><button class="btn ghost" onclick="removeEntry('churns',${idx})">Excluir</button></div></div>`;
+      }
+      if(type==='vendas'){
+        return `<div class="item" data-type="${type}" data-idx="${idx}"><div><strong>${escapeHtml(entry.descricao)}</strong><div style="font-size:12px;color:var(--muted)">Cliente: ${escapeHtml(entry.cliente)} — Valor: ${fmtBRL(Number(entry.valor)||0)} — MRR: ${fmtBRL(Number(entry.mrr)||0)}</div>${dateDisplay}<div style="margin-top:6px;color:var(--muted)">Analista: ${escapeHtml(entry.analista||'-')} • Horas: ${entry.horas||0}h</div></div><div><button class="btn ghost" onclick="removeEntry('vendas',${idx})">Excluir</button></div></div>`;
+      }
+      if(type==='reunioes'){
+        return `<div class="item" data-type="${type}" data-idx="${idx}"><div><strong>${escapeHtml(entry.tipo)} — ${escapeHtml(entry.cliente)}</strong><div style="font-size:12px;color:var(--muted)">${escapeHtml(entry.resumo||'')}</div>${dateDisplay}<div style="margin-top:6px;color:var(--muted)">Analista: ${escapeHtml(entry.analista||'-')} • Horas: ${entry.horas||0}h</div></div><div><button class="btn ghost" onclick="removeEntry('reunioes',${idx})">Excluir</button></div></div>`;
+      }
+      if(type==='oportunidades'){
+        return `<div class="item" data-type="${type}" data-idx="${idx}"><div><strong>${escapeHtml(entry.descricao)}</strong><div style="font-size:12px;color:var(--muted)">Cliente: ${escapeHtml(entry.cliente)} — Valor estimado: ${fmtBRL(Number(entry.valor)||0)} — MRR estimado: ${fmtBRL(Number(entry.mrr)||0)}</div>${dateDisplay}<div style="margin-top:6px;color:var(--muted)">Analista: ${escapeHtml(entry.analista||'-')} • Horas: ${entry.horas||0}h</div></div><div><button class="btn ghost" onclick="removeEntry('oportunidades',${idx})">Excluir</button></div></div>`;
+      }
+      if(type==='novidades' || type==='dificuldades'){
+        return `<div class="item" data-type="${type}" data-idx="${idx}"><div><strong>${escapeHtml(entry.cliente||entry.titulo||'')}</strong><div style="font-size:12px;color:var(--muted)">${escapeHtml(entry.descricao||'')}</div>${dateDisplay}<div style="margin-top:6px;color:var(--muted)">Analista: ${escapeHtml(entry.analista||'-')} • Horas: ${entry.horas||0}h</div></div><div><button class="btn ghost" onclick="removeEntry('${type}',${idx})">Excluir</button></div></div>`;
+      }
+      return '';
+    }
+
+    function renderList(key){
+      const map = {
+        impacts: 'impList', churns: 'churnList', vendas:'vendaList', reunioes:'reunList', oportunidades:'oppList', novidades:'newsList', dificuldades:'diffList'
+      };
+      const container = document.getElementById(map[key]);
+      if(!container) return;
+      container.innerHTML = state[key].map((e,i)=> makeItemHTML(key,i,e)).join('') || '<div style="color:var(--muted);font-size:13px">Nenhum registro</div>';
+    }
+
+    function removeEntry(type, idx){
+      if(!confirm('Excluir este registro?')) return;
+      // capture item before removing for logging
+      const removed = state[type][idx];
+      state[type].splice(idx,1);
+      save();
+      logAction('delete', type, { summary: simpleSummary(removed) });
+    }
+
+    // dashboard
+    function renderDashboard(){
+      const totalRevenue = sum(state.vendas,'valor');
+      const totalMRR = sum(state.vendas,'mrr');
+      const totalHours = ['impacts','churns','vendas','reunioes','oportunidades','novidades','dificuldades'].reduce((s,k)=> s + sum(state[k],'horas'),0);
+      document.getElementById('totalRevenue').innerText = fmtBRL(totalRevenue);
+      document.getElementById('totalMRR').innerText = fmtBRL(totalMRR);
+      document.getElementById('totalHours').innerText = (Math.round((totalHours+Number.EPSILON)*10)/10) + 'h';
+
+      // by analyst
+      const byAnalyst = {};
+      Object.values(state).flat().forEach(item=>{
+        const a = (item.analista || 'Sem analista').trim();
+        byAnalyst[a] = byAnalyst[a] || {count:0,hours:0};
+        byAnalyst[a].count += 1;
+        byAnalyst[a].hours += Number(item.horas||0);
+      });
+      const container = document.getElementById('byAnalyst'); container.innerHTML='';
+      Object.entries(byAnalyst).sort((a,b)=> b[1].count - a[1].count).forEach(([anal,vals])=>{
+        const el = document.createElement('div'); el.style.marginBottom='8px'; el.innerHTML = `<strong>${escapeHtml(anal)}</strong><div style="font-size:13px;color:var(--muted)">${vals.count} atividades • ${Math.round((vals.hours+Number.EPSILON)*10)/10}h</div>`; container.appendChild(el);
+      });
+      if(Object.keys(byAnalyst).length===0) container.innerHTML = '<div style="color:var(--muted)">Nenhum analista registrado</div>';
+
+      // by task type
+      const types = {
+        Impactos: state.impacts.length,
+        Churns: state.churns.length,
+        Vendas: state.vendas.length,
+        Atividades: state.reunioes.length,
+        Oportunidades: state.oportunidades.length,
+        Novidades: state.novidades.length,
+        Dificuldades: state.dificuldades.length
+      };
+      const tcont = document.getElementById('byTaskType'); tcont.innerHTML='';
+      Object.entries(types).forEach(([k,v])=>{
+        const el = document.createElement('div'); el.style.marginBottom='6px'; el.innerHTML = `<div style="display:flex;justify-content:space-between"><div style="font-size:13px">${k}</div><div style="font-weight:700">${v}</div></div>`; tcont.appendChild(el);
+      });
+    }
+
+    // escape helper
+    function escapeHtml(s){ if(!s && s!==0) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // util: resumo simples para logs
+    function simpleSummary(entry){
+      if(!entry) return null;
+      // pick most meaningful fields:
+      const copy = {};
+      if(entry.cliente) copy.cliente = entry.cliente;
+      if(entry.descricao) copy.descricao = entry.descricao;
+      if(entry.descricao === undefined && entry.titulo) copy.titulo = entry.titulo;
+      if(entry.descricao === undefined && entry.tipo) copy.tipo = entry.tipo;
+      if(entry.resumo) copy.resumo = entry.resumo;
+      if(entry.descricao === undefined && entry.descricao) copy.descricao = entry.descricao;
+      if(entry.valor) copy.valor = entry.valor;
+      if(entry.mrr) copy.mrr = entry.mrr;
+      if(entry.data) copy.data = entry.data;
+      return copy;
+    }
+
+    // default dates setter
+    function setDefaultDates(){
+      const ids = ['impData','chData','vendaData','reunData','oppData','newsData','diffData'];
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el && !el.value) el.value = todayISO();
+      });
+    }
+
+    // add handlers
+    function wire(){
+      // set default date values immediately
+      setDefaultDates();
+
+      // abrir registros
+      document.getElementById('openRegistros').addEventListener('click', ()=>{ window.open('registros.html', '_blank'); });
+
+      document.getElementById('addImpact').addEventListener('click', ()=>{
+        const entry = {
+          cliente:document.getElementById('impCliente').value.trim(),
+          tipo:document.getElementById('impTipo').value,
+          descricao:document.getElementById('impDesc').value.trim(),
+          analista:document.getElementById('impAnalista').value.trim(),
+          horas: Number(document.getElementById('impHoras').value) || 0,
+          data: document.getElementById('impData').value || todayISO()
+        };
+        if(!entry.cliente){ alert('Informe o cliente'); return }
+        state.impacts.push(entry); save();
+        // clear
+        document.getElementById('impCliente').value=''; document.getElementById('impDesc').value=''; document.getElementById('impHoras').value=0; document.getElementById('impAnalista').value=''; document.getElementById('impData').value = todayISO();
+
+        // log action
+        logAction('create','impacts', { summary: simpleSummary(entry) });
+      });
+
+      document.getElementById('clearImp').addEventListener('click', ()=>{document.getElementById('impCliente').value='';document.getElementById('impDesc').value='';document.getElementById('impAnalista').value='';document.getElementById('impHoras').value=0; document.getElementById('impData').value = todayISO();});
+
+      document.getElementById('addChurn').addEventListener('click', ()=>{
+        const entry = {
+          cliente:document.getElementById('chCliente').value.trim(),
+          motivo:document.getElementById('chMotivo').value.trim(),
+          analista:document.getElementById('chAnalista').value.trim(),
+          horas: Number(document.getElementById('chHoras').value)||0,
+          data: document.getElementById('chData').value || todayISO()
+        };
+        if(!entry.cliente){ alert('Informe o cliente'); return }
+        state.churns.push(entry); save();
+        document.getElementById('chCliente').value='';document.getElementById('chMotivo').value='';document.getElementById('chAnalista').value='';document.getElementById('chHoras').value=0; document.getElementById('chData').value = todayISO();
+
+        // log
+        logAction('create','churns', { summary: simpleSummary(entry) });
+      });
+
+      document.getElementById('addVenda').addEventListener('click', ()=>{
+        const entry = {
+          descricao:document.getElementById('vendaDesc').value.trim(),
+          cliente:document.getElementById('vendaCliente').value.trim(),
+          valor: Number(document.getElementById('vendaValor').value)||0,
+          mrr: Number(document.getElementById('vendaMRR').value)||0,
+          analista:document.getElementById('vendaAnalista').value.trim(),
+          horas: Number(document.getElementById('vendaHoras')?.value)||0,
+          data: document.getElementById('vendaData').value || todayISO()
+        };
+        if(!entry.descricao || !entry.cliente){ alert('Informe descrição do que foi vendido e o cliente'); return }
+        state.vendas.push(entry); save();
+        document.getElementById('vendaDesc').value='';document.getElementById('vendaCliente').value='';document.getElementById('vendaValor').value=0;document.getElementById('vendaMRR').value=0;document.getElementById('vendaAnalista').value=''; document.getElementById('vendaData').value = todayISO();
+
+        // log
+        logAction('create','vendas', { summary: simpleSummary(entry) });
+      });
+
+      document.getElementById('addReun').addEventListener('click', ()=>{
+        const entry = {
+          cliente:document.getElementById('reunCliente').value.trim(),
+          tipo:document.getElementById('reunTipo').value,
+          resumo:document.getElementById('reunResumo').value.trim(),
+          analista:document.getElementById('reunAnalista').value.trim(),
+          horas: Number(document.getElementById('reunHoras').value)||0,
+          data: document.getElementById('reunData').value || todayISO()
+        };
+        if(!entry.cliente){ alert('Informe o cliente'); return }
+        state.reunioes.push(entry); save();
+        document.getElementById('reunCliente').value='';document.getElementById('reunResumo').value='';document.getElementById('reunAnalista').value='';document.getElementById('reunHoras').value=0; document.getElementById('reunData').value = todayISO();
+
+        // log
+        logAction('create','reunioes', { summary: simpleSummary(entry) });
+      });
+
+      document.getElementById('addOpp').addEventListener('click', ()=>{
+        const entry = {
+          descricao:document.getElementById('oppDesc').value.trim(),
+          cliente:document.getElementById('oppCliente').value.trim(),
+          valor: Number(document.getElementById('oppValor').value)||0,
+          mrr: Number(document.getElementById('oppMRR').value)||0,
+          analista:document.getElementById('oppAnalista').value.trim(),
+          horas:0,
+          data: document.getElementById('oppData').value || todayISO()
+        };
+        if(!entry.descricao || !entry.cliente){ alert('Informe a oportunidade e o cliente'); return }
+        state.oportunidades.push(entry); save();
+        document.getElementById('oppDesc').value='';document.getElementById('oppCliente').value='';document.getElementById('oppValor').value=0;document.getElementById('oppMRR').value=0;document.getElementById('oppAnalista').value=''; document.getElementById('oppData').value = todayISO();
+
+        // log
+        logAction('create','oportunidades', { summary: simpleSummary(entry) });
+      });
+
+      document.getElementById('addNews').addEventListener('click', ()=>{
+        const entry = {
+          titulo:'Novidade',
+          descricao:document.getElementById('newsDesc').value.trim(),
+          analista:document.getElementById('newsAnalista').value.trim(),
+          horas: Number(document.getElementById('newsHoras').value)||0,
+          data: document.getElementById('newsData').value || todayISO()
+        };
+        if(!entry.descricao){ alert('Descreva a novidade'); return }
+        state.novidades.push(entry); save();
+        document.getElementById('newsDesc').value='';document.getElementById('newsAnalista').value='';document.getElementById('newsHoras').value=0; document.getElementById('newsData').value = todayISO();
+
+        // log
+        logAction('create','novidades', { summary: simpleSummary(entry) });
+      });
+
+      document.getElementById('addDiff').addEventListener('click', ()=>{
+        const entry = {
+          cliente:document.getElementById('diffCliente').value.trim(),
+          descricao:document.getElementById('diffDesc').value.trim(),
+          analista:document.getElementById('diffAnalista').value.trim(),
+          horas: Number(document.getElementById('diffHoras').value)||0,
+          data: document.getElementById('diffData').value || todayISO()
+        };
+        if(!entry.cliente || !entry.descricao){ alert('Informe cliente e descreva a dificuldade'); return }
+        state.dificuldades.push(entry); save();
+        document.getElementById('diffCliente').value='';document.getElementById('diffDesc').value='';document.getElementById('diffAnalista').value='';document.getElementById('diffHoras').value=0; document.getElementById('diffData').value = todayISO();
+
+        // log
+        logAction('create','dificuldades', { summary: simpleSummary(entry) });
+      });
+
+      // export/import
+      document.getElementById('exportBtn').addEventListener('click', ()=>{
+        const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download = 'controle_diario_export.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+
+        // log export
+        logAction('export','all', { count: Object.values(state).flat().length });
+      });
+
+      document.getElementById('importBtn').addEventListener('click', ()=>{document.getElementById('importFile').click()});
+      document.getElementById('importFile').addEventListener('change', (ev)=>{
+        const f = ev.target.files[0]; if(!f) return; const reader = new FileReader(); reader.onload = ()=>{
+          try{
+            const data = JSON.parse(reader.result);
+            // merge top-level arrays if provided; otherwise keep existing
+            ['impacts','churns','vendas','reunioes','oportunidades','novidades','dificuldades'].forEach(k=>{
+              if(Array.isArray(data[k])) state[k] = data[k];
+            });
+            save(); alert('Importado com sucesso');
+
+            // log import (store summary counts)
+            const counts = {};
+            ['impacts','churns','vendas','reunioes','oportunidades','novidades','dificuldades'].forEach(k=> counts[k] = Array.isArray(data[k]) ? data[k].length : 0);
+            logAction('import','all', { counts });
+          }catch(e){ alert('Arquivo inválido') }
+        }; reader.readAsText(f);
+      });
+
+    }
+
+    // init
+    load(); wire(); renderAll();
+  </script>
+</body>
+</html>

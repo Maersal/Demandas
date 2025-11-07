@@ -402,25 +402,43 @@
         console.warn('logAction error',e);
       }
     }
+// --- LOAD & SAVE USANDO BACKEND ---
+async function load(){
+  try{
+    const res = await fetch('/dados');
+    const data = await res.json();
 
-    // load from storage
-    function load(){
-      const raw = localStorage.getItem(STORE_KEY);
-      if(raw){
-        try{
-          const parsed = JSON.parse(raw);
-          // ensure arrays exist
-          ['impacts','churns','vendas','reunioes','oportunidades','novidades','dificuldades'].forEach(k=>{
-            state[k] = Array.isArray(parsed[k]) ? parsed[k] : state[k];
-          });
-        }catch(e){console.warn('erro parse storage',e)}
-      }
-    }
+    // garante que não quebra caso algo venha faltando
+    Object.assign(state, {
+      impacts: data.impacts || [],
+      churns: data.churns || [],
+      vendas: data.vendas || [],
+      reunioes: data.reunioes || [],
+      oportunidades: data.oportunidades || [],
+      novidades: data.novidades || [],
+      dificuldades: data.dificuldades || []
+    });
 
-    function save(){
-      localStorage.setItem(STORE_KEY, JSON.stringify(state));
-      renderAll();
-    }
+  } catch(e){
+    console.warn("Erro ao carregar dados do servidor, usando estado vazio.", e);
+  }
+  renderAll();
+}
+
+async function save(){
+  try{
+    await fetch('/dados', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(state)
+    });
+  } catch(e){
+    console.warn("Erro ao salvar no servidor:", e);
+    alert("⚠ Não foi possível salvar no servidor.");
+  }
+  renderAll();
+}
+
 
     // helpers
     const fmtBRL = v => v==null? 'R$ 0,00' : Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});

@@ -144,10 +144,39 @@
     header{flex-direction:column;align-items:flex-start}
     .brand img{height:64px;width:64px}
   }
+  /* --- Overlay de carregamento ao registrar --- */
+#loadingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(3px);
+}
+
+#loadingOverlay .msg {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  animation: pulse 0.8s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: .4 }
+  50% { opacity: 1 }
+  100% { opacity: .4 }
+}
+
 </style>
 
 </head>
 <body>
+  <div id="loadingOverlay">
+  <div class="msg">Registrando...</div>
+</div>
+
   <div class="app">
     <header>
       <div class="brand">
@@ -697,10 +726,29 @@
       });
 
     }
+// --- Exibir animação para botões "Registrar"
+function enableRegistrarAnimation() {
+  const overlay = document.getElementById("loadingOverlay");
+
+  // Seleciona todos botões que CONTENHAM "Registrar" no texto
+  const registrarButtons = Array.from(document.querySelectorAll("button"))
+    .filter(btn => btn.innerText.trim().toLowerCase().startsWith("registrar"));
+
+  registrarButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      overlay.style.display = "flex";
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 1200); // 1.2s
+    });
+  });
+}
+
+// Chamar após carregar tudo
+setTimeout(enableRegistrarAnimation, 300);
 
     // init
     load(); wire(); renderAll();
   </script>
 </body>
 </html>
-

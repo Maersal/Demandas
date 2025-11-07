@@ -1,0 +1,18 @@
+{
+  "impacts": [],
+  "churns": [],
+  "vendas": [],
+  "reunioes": [
+    {
+      "cliente": "a",
+      "tipo": "Reunião",
+      "resumo": "a",
+      "analista": "a",
+      "horas": 0,
+      "data": "2025-11-07"
+    }
+  ],
+  "oportunidades": [],
+  "novidades": [],
+  "dificuldades": []
+}
